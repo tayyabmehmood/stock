@@ -1,0 +1,42 @@
+services:
+  postgres:
+    container_name: postgres_payconiq
+    image: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      PGDATA: /data/postgres
+    volumes:
+      - ./postgres-data1:/data/postgres
+    ports:
+      - "5432:5432"
+    networks:
+      - postgres
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      
+  Stock:
+    container_name: stock_payconiq
+    build:
+        context: Stock
+        dockerfile: Dockerfile
+    image: stock:latest
+    ports:
+        - 8082:8082
+    networks:
+        - postgres  
+    restart: unless-stopped
+    depends_on:
+       postgres:
+        condition: service_healthy
+       
+
+networks:
+  postgres:
+    driver: bridge
+
+
